@@ -4,7 +4,7 @@ from datetime import datetime
 
 
 # =======================
-# USER SCHEMAS (UNCHANGED)
+# USER SCHEMAS 
 # =======================
 
 class UserBase(BaseModel):
@@ -30,7 +30,7 @@ class UserResponse(UserBase):
 
 
 # =======================
-# REQUEST SCHEMAS (UNCHANGED)
+# REQUEST SCHEMAS 
 # =======================
 
 class RequestCreate(BaseModel):
@@ -65,7 +65,7 @@ class RequestResponse(BaseModel):
 
 
 # =======================
-# DONATION SCHEMAS (UNCHANGED)
+# DONATION SCHEMAS 
 # =======================
 
 class DonationCreate(BaseModel):
@@ -73,7 +73,7 @@ class DonationCreate(BaseModel):
     donor_uid: str
     amount: float
     payment_method: str
-    request_title: Optional[str] = None # Allows frontend to optionally pass title
+    request_title: Optional[str] = None 
 
 class DonationResponse(BaseModel):
     id: str
@@ -82,11 +82,13 @@ class DonationResponse(BaseModel):
     amount: float
     timestamp: datetime
     
-    # CRITICAL FIX: Explicitly include these fields for transfer to frontend
+    
     payment_method: Optional[str] = "card"
     request_title: Optional[str] = "Unknown Campaign"
     
-# Schema for AI Story Generation Input (UNCHANGED)
+    
+    
+# Schema for AI Story Generation Input
 class StoryGenerationInput(BaseModel):
     title: str
     category: str
@@ -95,7 +97,7 @@ class StoryGenerationInput(BaseModel):
     
     
 # =======================
-# SPONSOR SCHEMAS (CRITICALLY MODIFIED)
+# SPONSOR SCHEMAS 
 # =======================
 
 class SponsorDealBase(BaseModel):
@@ -109,15 +111,15 @@ class SponsorDealResponse(SponsorDealBase):
     class Config:
         from_attributes = True
 
-# --- NEW BASE CONTACT SCHEMA (For strict request validation) ---
+
 class SponsorContactBase(BaseModel):
-    # We keep the strict validation here for the initial POST request
+
     sponsor_name: str
-    contact_email: EmailStr # <-- KEEPING STRICT CHECK for NEW submissions
+    contact_email: EmailStr 
     deal_id: str
     website_url: Optional[str] = None
 
-class SponsorCreate(SponsorContactBase): # Inherit the strict email check
+class SponsorCreate(SponsorContactBase):  
     """Data submitted by a potential sponsor."""
     
     # Custom Theme Data
@@ -148,16 +150,16 @@ class SponsorUpdate(BaseModel):
     status: Optional[str] = None
     is_active_theme: Optional[bool] = None
     
-    # Admin can edit the theme fields (e.g., correcting a hex code)
+    
     primary_color_hex: Optional[str] = None
     light_bg_hex: Optional[str] = None
     website_url: Optional[str] = None
     
-    # NEW: Admin can also edit the contact email (e.g., to fix the bad legacy data)
+   
     contact_email: Optional[EmailStr] = None
     
     
-    # app/models/schemas.py (Add this new section)
+  
 
 # =======================
 # VERIFICATION SCHEMAS
@@ -165,9 +167,9 @@ class SponsorUpdate(BaseModel):
 
 class VerificationDealBase(BaseModel):
     """Defines fixed tiers for verification and associated cost."""
-    name: str  # e.g., "30-Day Basic Verification"
+    name: str  
     cost_usd: float
-    duration_days: int # How long the badge lasts (e.g., 365)
+    duration_days: int 
     
 class VerificationDealResponse(VerificationDealBase):
     id: str
@@ -183,8 +185,8 @@ class VerificationRequestCreate(BaseModel):
 class VerificationRequestResponse(VerificationRequestCreate):
     """Data returned for a verification request record."""
     id: str
-    user_name: Optional[str] = None # Will be populated by the server
-    status: str = "pending" # pending, approved, rejected, expired
+    user_name: Optional[str] = None 
+    status: str = "pending" 
     
     created_at: datetime
     

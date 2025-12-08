@@ -1,9 +1,8 @@
-# app/routers/verification.py (Cleaned and Completed)
+# app/routers/verification.py 
 
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Depends, status 
 from app.config import db
-# NOTE: upload_image is commented out as you are testing without files
-# from app.services.storage import upload_image 
+
 from app.models.schemas import (
     VerificationDealResponse, 
     VerificationRequestResponse, 
@@ -15,20 +14,20 @@ from typing import List, Optional
 
 router = APIRouter(prefix="/verification", tags=["Verification"])
 
-# Mock Deals (Defined globally for use in AdminVerification.jsx too)
+
 MOCK_DEALS = [
     {"id": "badge-1", "name": "1 Year Standard Badge", "cost_usd": 25.00, "duration_days": 365},
     {"id": "badge-2", "name": "Lifetime Badge", "cost_usd": 150.00, "duration_days": 9999},
 ]
 
-# --- DEPENDENCY: Admin Check ---
+
 def get_admin(admin_uid: str):
     """Dependency to validate admin privileges."""
     admin_ref = db.collection("users").document(admin_uid).get()
     if not admin_ref.exists or admin_ref.to_dict().get("role") != "admin":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin privileges required.")
     return admin_uid
-# ------------------------------
+
 
 # 1. Get Verification Deals
 @router.get("/deals", response_model=List[VerificationDealResponse])
@@ -41,13 +40,12 @@ def get_verification_deals():
 async def create_verification_request(
     requester_uid: str = Form(...),
     deal_id: str = Form(...),
-    # proof_description: str = Form(...), # Removed for simplified test
-    # proof_document: UploadFile = File(...) # Removed for simplified test
+   
 ):
     try:
-        # document_url = await upload_image(proof_document) # Removed for simplified test
-        document_url = "N/A - File Upload Skipped for Testing" # Placeholder
-        proof_description = "N/A - Description Skipped for Testing" # Placeholder
+        
+        document_url = "N/A - File Upload Skipped for Testing" 
+        proof_description = "N/A - Description Skipped for Testing" 
         
         # 2. Fetch User Name for contextual display
         user_doc = db.collection("users").document(requester_uid).get()
@@ -109,16 +107,16 @@ def update_verification_status(
     if not update_data:
         return request_ref.get().to_dict()
 
-    # CRITICAL: If status is 'approved', update the main user record's is_verified flag
+    
     if update_data.get("status") == "approved":
         current_request = request_ref.get().to_dict()
         user_uid = current_request.get("requester_uid")
         
-        # FINAL FIX: Update user's global verification status in the 'users' collection
+   
         db.collection("users").document(user_uid).update({"is_verified": True})
         
     elif update_data.get("status") == "rejected":
-        # Optionally handle badge revocation here
+  
         pass
 
     try:

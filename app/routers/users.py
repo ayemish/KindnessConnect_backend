@@ -22,8 +22,7 @@ def get_all_users(admin_uid: str = Depends(get_admin)): # Changed to use the get
     Retrieves a list of all registered users for administrative oversight.
     """
     try:
-        # 1. Security Check: Validate Admin Privileges using the UID from the token
-        # (This check is now done inside the get_admin dependency helper)
+        
         
         # 2. Fetch all users
         docs = db.collection("users").stream()
@@ -32,16 +31,16 @@ def get_all_users(admin_uid: str = Depends(get_admin)): # Changed to use the get
         for doc in docs:
             user_data = doc.to_dict()
             
-            # 🔑 CRITICAL FIX 1: Add the UID (document ID) which Pydantic requires
+           
             user_data['uid'] = doc.id 
             
-            # 🔑 CRITICAL FIX 2: Set default values for required fields 
+          
             # This prevents 422 errors on old or incomplete documents.
             user_data['is_verified'] = user_data.get('is_verified', False)
             user_data['is_active'] = user_data.get('is_active', True)
-            user_data['role'] = user_data.get('role', 'donor') 
+            user_data['role'] = user_data.get('role', 'user') 
             
-            # CRITICAL FIX 3: Ensure created_at is present (use current time as fallback)
+           
             # Pydantic is usually good with Firestore Timestamps, but adding a fallback helps.
             user_data['created_at'] = user_data.get('created_at', datetime.utcnow())
 

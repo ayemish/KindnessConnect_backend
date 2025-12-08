@@ -12,8 +12,8 @@ from datetime import datetime
 import uuid
 from typing import List, Optional
 from firebase_admin import firestore 
-from app.services.color_extraction import get_dominant_rgb_from_image, get_palette_from_colors # <-- NEW IMPORT
-import io # <-- Import is unnecessary here, but harmless if left
+from app.services.color_extraction import get_dominant_rgb_from_image, get_palette_from_colors 
+import io 
 
 router = APIRouter(prefix="/sponsors", tags=["Sponsors"])
 
@@ -31,7 +31,7 @@ def get_sponsor_deals():
     """Returns the list of available sponsorship tiers."""
     return MOCK_DEALS
 
-# --- NEW ENDPOINT: Generate colors from an uploaded logo ---
+# ---  Generate colors from an uploaded logo ---
 
 @router.post("/generate_theme", tags=["Sponsors"])
 async def generate_theme_from_logo(logo_file: UploadFile = File(...)):
@@ -66,7 +66,7 @@ async def generate_theme_from_logo(logo_file: UploadFile = File(...)):
     }
 
 
-# --- 2. SPONSOR CREATION (Frontend Submission) ---
+# --- 2. SPONSOR CREATION ---
 
 @router.post("/", response_model=SponsorResponse)
 async def create_sponsor_request(
@@ -113,11 +113,11 @@ async def create_sponsor_request(
 def get_all_sponsors(admin_uid: str): # Requires Admin UID query param
     """Retrieves all sponsors (Admin only)."""
     
-    # --- FIX 1: Implement Admin role check for Read access ---
+    # ---  Implement Admin role check for Read access ---
     admin_ref = db.collection("users").document(admin_uid).get()
     if not admin_ref.exists or admin_ref.to_dict().get("role") != "admin":
         raise HTTPException(status_code=403, detail="Insufficient privileges: Admin access required")
-    # ---------------------------------------------------------
+   
 
     try:
         docs = db.collection("sponsors").stream()
@@ -130,12 +130,12 @@ def get_all_sponsors(admin_uid: str): # Requires Admin UID query param
 def update_sponsor_status(sponsor_id: str, update: SponsorUpdate, admin_uid: str):
     """Admin updates sponsor status or activates/deactivates the theme."""
     
-    # --- FIX 2: Implement CRITICAL Admin role check for Update access ---
+    # ---  I Admin role check for Update access ---
     admin_ref = db.collection("users").document(admin_uid).get()
     
     if not admin_ref.exists or admin_ref.to_dict().get("role") != "admin":
         raise HTTPException(status_code=403, detail="Insufficient privileges: Admin access required")
-    # -------------------------------------------------------------------
+    
     
     sponsor_ref = db.collection("sponsors").document(sponsor_id)
     if not sponsor_ref.get().exists:
@@ -143,12 +143,12 @@ def update_sponsor_status(sponsor_id: str, update: SponsorUpdate, admin_uid: str
         
     update_data = update.dict(exclude_none=True)
 
-    # --- FIX 4: SAFETY CHECK - Return early if no data to update ---
+    # --- SAFETY CHECK - Return early if no data to update ---
     if not update_data:
         return sponsor_ref.get().to_dict()
-    # --------------------------------------------------------------
+   
     
-    # --- FIX 3: Implement logic to ensure only one theme is active ---
+    # --- : Implement logic to ensure only one theme is active ---
     if update_data.get("is_active_theme") == True:
         try:
             # 1. Query for the currently active sponsor
@@ -160,7 +160,7 @@ def update_sponsor_status(sponsor_id: str, update: SponsorUpdate, admin_uid: str
         except Exception as e:
             # Log the potential error, but proceed to activate the new one
             print(f"Warning: Failed to deactivate previous sponsor (Continuing): {e}")
-    # -----------------------------------------------------------------
+
             
     sponsor_ref.update(update_data)
     

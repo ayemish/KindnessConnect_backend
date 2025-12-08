@@ -19,7 +19,7 @@ import os
 from google import genai
 from google.genai.errors import APIError as GeminiAPIError
 from google.genai.types import GenerateContentConfig
-# ----------------------
+
 
 # Define model names and base URLs globally
 GEMINI_MODEL = "gemini-2.5-flash"
@@ -33,13 +33,13 @@ def clean_story_output(raw_story: str) -> str:
     """Removes markdown artifacts and introductory phrases from AI output."""
     final_story = raw_story.strip()
     
-    # 1. Remove markdown code blocks (e.g., ```python)
+    # 1. Remove markdown code blocks 
     if final_story.startswith('```') and final_story.endswith('```'):
         lines = final_story.split('\n')
         if len(lines) > 2:
             final_story = '\n'.join(lines[1:-1]).strip()
 
-    # 2. Remove common introductory phrases (case-insensitive)
+    # 2. Remove common introductory phrases 
     intro_phrases = [
         "here is the story:", "the story:", "story:", "narrative:", 
         "here is the narrative:", "i will generate the story now:", 
@@ -55,9 +55,9 @@ def clean_story_output(raw_story: str) -> str:
     
     return final_story if final_story else raw_story.strip()
 
-# ----------------------------------------------------------------------------------
 
-# 1. Create a New Donation Request (with Multiple Images)
+
+# 1. Create a New Donation Request 
 @router.post("/", response_model=RequestResponse)
 async def create_request(
     title: str = Form(...),

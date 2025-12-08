@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware  # <--- The key ingredient!
+from fastapi.middleware.cors import CORSMiddleware 
 from app.config import db
 from app.services.storage import supabase, bucket
 from app.routers import users, requests, donations, sponsors
@@ -11,9 +11,9 @@ app = FastAPI(title="KindnessConnect API", version="1.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows ALL websites (including localhost:5173)
+    allow_origins=["*"],  
     allow_credentials=True,
-    allow_methods=["*"],  # Allows all actions (GET, POST, etc.)
+    allow_methods=["*"],  
     allow_headers=["*"],
 )
 

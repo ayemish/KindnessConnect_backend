@@ -1,0 +1,10 @@
+# Sensitive Config/Keys
+.env
+*.json
+
+# Python Environment
+/venv/
+__pycache__/
+
+# Log files
+*.log

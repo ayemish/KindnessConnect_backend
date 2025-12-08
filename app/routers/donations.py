@@ -51,7 +51,7 @@ def create_donation(donation: DonationCreate):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Donation processing failed: {str(e)}")
 
-# 2. Get My Donations (History) - FIXED FOR DATA INCONSISTENCY
+# 2. Get My Donations 
 @router.get("/user/{uid}", response_model=list[DonationResponse])
 def get_user_donations(uid: str):
     """
