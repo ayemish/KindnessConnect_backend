@@ -1,10 +1,17 @@
-# Sensitive Config/Keys
-.env
-*.json
-
-# Python Environment
+# Python dependencies and environments
 /venv/
 __pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
 
-# Log files
-*.log
+# --- SECRETS AND CONFIGURATION ---
+# The environment variables file containing API keys (STRIPE, GEMINI, etc.)
+.env
+
+# The folder containing the Firebase Admin JSON key
+/secrets/
+
+# FastAPI/Uvicorn specific files
+.log
