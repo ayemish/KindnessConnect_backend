@@ -1,42 +1,64 @@
-# app/config.py 
+# app/config.py
 
+import os
 import firebase_admin
 from firebase_admin import credentials, firestore
-import os
-from dotenv import load_dotenv
+import json # Import the json library to handle the credential string
 
-
-load_dotenv() 
-
-
-CRED_PATH = os.environ.get("FIREBASE_ADMIN_CREDENTIALS_PATH")
+# Initialize Firestore placeholder globally
+db = None
 
 def initialize_firebase():
-    """Initializes the Firebase Admin SDK based on environment variables."""
-    # Check 1: Ensure the path environment variable is set
-    if not CRED_PATH:
-        print(" [WARNING] Firebase initialization skipped: FIREBASE_ADMIN_CREDENTIALS_PATH environment variable not set.")
-        # We raise an exception here because the database is critical to the app's functionality.
-        raise ValueError("FIREBASE_ADMIN_CREDENTIALS_PATH environment variable not set.")
-
-    # Check 2: Ensure the file exists at the specified path
-    if not os.path.exists(CRED_PATH):
-        raise FileNotFoundError(f" [ERROR] Could not find the Firebase Service Account key at path: {CRED_PATH}. Check your .env file.")
-
-    # Check 3: Check if Firebase is already initialized
-    if not firebase_admin._apps:
+    """
+    Initializes Firebase Admin SDK using a dual approach:
+    1. Secure Environment Variable (for Render/Deployment)
+    2. Local File Path (for local development)
+    """
+    global db
+    
+    # --- Check 1: Try reading from the secure Environment Variable (DEPLOYMENT PATH) ---
+    # Render, Vercel, etc., will have this set.
+    admin_json_string = os.environ.get("FIREBASE_ADMIN_CREDENTIALS")
+    
+    if admin_json_string:
+        print("[INFO] Initializing Firebase from Environment Variable...")
         try:
-            # Load the certificate from the file path
-            cred = credentials.Certificate(CRED_PATH) 
+            # 1. Load the JSON string into a Python dictionary
+            cred_dict = json.loads(admin_json_string)
+            
+            # 2. Use the dictionary directly to create credentials
+            cred = credentials.Certificate(cred_dict)
             firebase_admin.initialize_app(cred)
-            print(" [INFO] Firebase initialized successfully!")
+            
+            db = firestore.client()
+            print("[INFO] Firebase initialized successfully!")
+            return
+            
         except Exception as e:
-            # Catches errors like invalid JSON format (JSONDecodeError)
-            raise RuntimeError(f" [FATAL] Firebase initialization failed. Check JSON file format: {e}") from e
+            # If JSON parsing or initialization fails
+            print(f"[FATAL ERROR] Failed to initialize Firebase from environment variable: {e}")
+            raise RuntimeError("Firebase initialization failed from environment.")
 
-# Initialize immediately when this module is imported
-# This ensures Firebase is ready before any other part of the app tries to access it.
+
+    # --- Check 2: Fallback for local development (LOCAL PATH) ---
+    # This path uses your local .env file and the secrets/firebase-adminsdk.json file.
+    CRED_PATH = os.environ.get("FIREBASE_ADMIN_CREDENTIALS_PATH")
+    
+    if CRED_PATH and os.path.exists(CRED_PATH):
+        print(f"[INFO] Initializing Firebase from local file: {CRED_PATH}")
+        try:
+            cred = credentials.Certificate(CRED_PATH)
+            firebase_admin.initialize_app(cred)
+            db = firestore.client()
+            print("[INFO] Firebase initialized successfully from local file!")
+            return
+        except Exception as e:
+            print(f"[FATAL ERROR] Failed to initialize Firebase from local file: {e}")
+            raise RuntimeError("Firebase initialization failed from local file.")
+
+    # If neither path works
+    print("[FATAL ERROR] Firebase credentials missing for both deployment and local paths.")
+    raise RuntimeError("Cannot start application without Firebase credentials.")
+
+# Call initialization on import (this happens when FastAPI starts)
 initialize_firebase()
-
-
-db = firestore.client()
