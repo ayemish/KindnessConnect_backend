@@ -1,17 +1,101 @@
-# Python dependencies and environments
-/venv/
+# Byte-compiled / optimized / DLL files
 __pycache__/
-*.pyc
+*.py[codz]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
 *.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py.cover
+.hypothesis/
 .pytest_cache/
-.mypy_cache/
+cover/
 
-# --- SECRETS AND CONFIGURATION ---
-# The environment variables file containing API keys (STRIPE, GEMINI, etc.)
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+# *.log # Retained as it's covered by general exclusion below
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Environments
 .env
+.envrc
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+# NOTE: The second version already covers many virtual environment names, 
+# but we ensure the standard ones are explicitly listed.
+.venv/
+env/
+venv/
 
-# The folder containing the Firebase Admin JSON key
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Ruff stuff:
+.ruff_cache/
+
+# General Logs and Config Files from your project (HEAD version)
+*.log
+# Exclude the entire secrets directory where your JSON key is stored
 /secrets/
-
-# FastAPI/Uvicorn specific files
-.log
