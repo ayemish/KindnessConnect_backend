@@ -14,7 +14,7 @@ bucket: str = os.environ.get("SUPABASE_BUCKET")
 
 # 3. Create the Supabase Client (This is the variable missing in your error)
 if not url or not key:
-    print("❌ Error: SUPABASE_URL or SUPABASE_KEY is missing in .env file")
+    print(" Error: SUPABASE_URL or SUPABASE_KEY is missing in .env file")
     supabase = None
 else:
     supabase: Client = create_client(url, key)

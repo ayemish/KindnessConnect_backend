@@ -8,16 +8,17 @@ from firebase_admin import auth as firebase_auth
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
-# Helper function (to be sure the dependency check passes, assuming get_admin is not defined here)
+
 def get_admin(admin_uid: str):
     admin_ref = db.collection("users").document(admin_uid).get()
     if not admin_ref.exists or admin_ref.to_dict().get("role") != "admin":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient privileges: Admin access required")
     return admin_uid
 
+
 # --- ENDPOINT 1: Get All Users (Admin Only) ---
 @router.get("/", response_model=List[UserResponse])
-def get_all_users(admin_uid: str = Depends(get_admin)): # Changed to use the get_admin helper
+def get_all_users(admin_uid: str = Depends(get_admin)): 
     """
     Retrieves a list of all registered users for administrative oversight.
     """
@@ -53,12 +54,12 @@ def get_all_users(admin_uid: str = Depends(get_admin)): # Changed to use the get
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error retrieving users: {str(e)}")
     
     
+    
+    
 # --- ENDPOINT 2: Register/Create User Profile (Used post-Firebase Signup) ---
 @router.post("/signup", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def register_user_profile(user: UserCreate):
-    """
-    Registers the full user profile in the database after successful Firebase Auth signup.
-    """
+   
     try:
         user_ref = db.collection("users").document(user.uid)
         
@@ -80,7 +81,10 @@ def register_user_profile(user: UserCreate):
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Registration failed: {str(e)}")
 
-# --- ENDPOINT 3: Get User Profile (Securely using token) ---
+
+
+
+# --- ENDPOINT 3: Get User Profile  ---
 @router.get("/profile", response_model=UserResponse)
 def get_user_profile(uid: str = Depends(verify_firebase_token)):
     """
@@ -131,6 +135,7 @@ def verify_user_account(uid: str, admin_uid: str = Depends(verify_firebase_token
         
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))       
+    
     
     # --- ENDPOINT 5: Delete User Account (Admin Only) ---
 @router.delete("/{uid}", status_code=status.HTTP_204_NO_CONTENT)

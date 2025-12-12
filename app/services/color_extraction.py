@@ -40,12 +40,8 @@ def get_dominant_rgb_from_image(image_bytes: bytes, num_colors=5) -> List[Tuple[
         return []
 
 def get_palette_from_colors(dominant_rgbs: List[Tuple[int, int, int]]) -> Tuple[str, str]:
-    """
-    Calls the Colormind API with the dominant RGBs to get a harmonious palette.
-    Returns the Primary Color (HEX) and Light Background Color (HEX).
-    """
-    # Colormind input format: [[r,g,b], [r,g,b], 'N', 'N', 'N'] 
-    # We take the first two dominant colors and leave the rest to the model ('N')
+   
+    
     input_colors = [list(rgb) for rgb in dominant_rgbs[:2]]
     while len(input_colors) < 5:
         input_colors.append("N")
@@ -55,21 +51,20 @@ def get_palette_from_colors(dominant_rgbs: List[Tuple[int, int, int]]) -> Tuple[
             COLORMIND_API_URL,
             json={"input": input_colors, "model": "default"}
         )
-        response.raise_for_status() # Raise HTTPError for bad responses
+        response.raise_for_status() 
         
         data = response.json()
         palette_rgb = data.get('result', [])
         
         if len(palette_rgb) < 5:
-             # Fallback if Colormind returns insufficient data
+             
              return "#1D4ED8", "#EFF6FF" 
         
-        # Use the 4th color as the Primary/Accent color (often a deeper color)
-        # and the 1st color as the Light Background color (often the brightest/lightest color)
+       
         primary_rgb = palette_rgb[3]
         light_bg_rgb = palette_rgb[0]
         
-        # Helper to convert RGB tuple to Hex string
+      
         def rgb_to_hex(rgb):
             return '#%02x%02x%02x' % tuple(rgb)
 

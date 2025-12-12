@@ -1,7 +1,7 @@
 # requests.py
 
 import dotenv
-dotenv.load_dotenv() # MUST be at the very top to load environment variables immediately
+dotenv.load_dotenv() 
 
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Depends, Header
 from app.config import db
@@ -14,7 +14,7 @@ from typing import List, Optional
 from firebase_admin import firestore
 
 from openai import OpenAI
-# --- GEMINI IMPORTS ---
+
 import os
 from google import genai
 from google.genai.errors import APIError as GeminiAPIError
@@ -28,7 +28,7 @@ HF_MODEL = "meta-llama/Meta-Llama-3-8B-Instruct"
 
 router = APIRouter(prefix="/requests", tags=["Requests"])
 
-# --- REQUIRED HELPER FUNCTION: AGGRESSIVE CLEANING ---
+
 def clean_story_output(raw_story: str) -> str:
     """Removes markdown artifacts and introductory phrases from AI output."""
     final_story = raw_story.strip()
@@ -39,7 +39,7 @@ def clean_story_output(raw_story: str) -> str:
         if len(lines) > 2:
             final_story = '\n'.join(lines[1:-1]).strip()
 
-    # 2. Remove common introductory phrases 
+    # 2. Remove common introductory phrases (case-insensitive)
     intro_phrases = [
         "here is the story:", "the story:", "story:", "narrative:", 
         "here is the narrative:", "i will generate the story now:", 
@@ -54,7 +54,6 @@ def clean_story_output(raw_story: str) -> str:
         final_story = final_story.lstrip('#* ').strip()
     
     return final_story if final_story else raw_story.strip()
-
 
 
 # 1. Create a New Donation Request 
@@ -73,10 +72,10 @@ async def create_request(
     gallery_files: Optional[List[UploadFile]] = File(None) 
 ):
     try:
-        # 1. Upload Mandatory Cover Image
+        
         image_url = await upload_image(file)
         
-        # 2. Upload Optional Gallery Images 
+        
         gallery_urls = []
         if gallery_files:
             for gallery_file in gallery_files:
@@ -131,6 +130,7 @@ async def create_request(
 @router.get("/", response_model=list[RequestResponse])
 def get_all_requests():
     try:
+       
         docs = db.collection("donation_requests").stream()
         requests = []
         
@@ -155,9 +155,9 @@ def get_all_requests():
             
             # Apply privacy filter
             if is_public:
-                 req['requester_name'] = user_data.get('full_name', "Unknown")
+                req['requester_name'] = user_data.get('full_name', "Unknown")
             else:
-                 req['requester_name'] = "Anonymous Donor"
+                req['requester_name'] = "Anonymous Donor"
 
             # Verification status is always determined by the user record
             req['requester_verified'] = user_data.get('is_verified', False)
@@ -251,7 +251,7 @@ def reject_request(
     
     return {"message": "Request rejected", "status": "rejected"}
 
-# 6. Get Requests by User ID (My Requests)
+# 6. Get Requests by User ID 
 @router.get("/user/{uid}", response_model=list[RequestResponse])
 def get_requests_by_user(uid: str):
     """
@@ -311,14 +311,14 @@ def generate_story_text(data: StoryGenerationInput):
     Attempts generation using Gemini first. If it fails (quota, server error), 
     it falls back to the Hugging Face Llama 3 model.
     """
-    # Get Keys from the environment (loaded by dotenv at the top)
+    # Get Keys from the environment 
     GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
     HF_TOKEN = os.environ.get('HF_TOKEN')
     
     # --- STEP 1: Determine Prompt Content ---
     user_draft = data.story.strip() if data.story else ""
     
-    # Define the core instructions and context
+    
     context_details = f"CONTEXT: The campaign is for '{data.title}', category '{data.category}', aiming for ${data.goal_amount}."
 
     if user_draft:
@@ -372,7 +372,7 @@ def generate_story_text(data: StoryGenerationInput):
 
         hf_client = OpenAI(base_url=HF_BASE_URL, api_key=HF_TOKEN)
         
-        # NOTE: HF/OpenAI uses the messages list format
+        # HF/OpenAI uses the messages list format
         messages = [
             {"role": "system", "content": story_instruction},
             {"role": "user", "content": user_content}

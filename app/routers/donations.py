@@ -8,13 +8,12 @@ from typing import Optional
 
 router = APIRouter(prefix="/donations", tags=["Donations"])
 
-# 1. Make a Donation (Saves Title Directly)
+
+
+# 1. Make a Donation 
 @router.post("/", response_model=DonationResponse)
 def create_donation(donation: DonationCreate):
-    """
-    Creates a new donation record, ensures the request title is saved directly, 
-    and updates the collected amount atomically.
-    """
+ 
     try:
         # 1. Fetch Request Details to get the Title
         request_ref = db.collection("donation_requests").document(donation.request_id)
@@ -51,7 +50,9 @@ def create_donation(donation: DonationCreate):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Donation processing failed: {str(e)}")
 
-# 2. Get My Donations 
+
+
+# 2. Get  Donations 
 @router.get("/user/{uid}", response_model=list[DonationResponse])
 def get_user_donations(uid: str):
     """

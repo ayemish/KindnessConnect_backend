@@ -17,7 +17,7 @@ import io
 
 router = APIRouter(prefix="/sponsors", tags=["Sponsors"])
 
-# --- 1. SPONSOR DEALS (Fixed, can be pre-loaded in DB) ---
+# --- 1. SPONSOR DEALS 
 
 # Mock list of deals (In a real app, this would be loaded from Firestore)
 MOCK_DEALS = [
@@ -35,13 +35,9 @@ def get_sponsor_deals():
 
 @router.post("/generate_theme", tags=["Sponsors"])
 async def generate_theme_from_logo(logo_file: UploadFile = File(...)):
-    """
-    Receives a logo image, extracts dominant colors, and generates a 
-    recommended primary/background HEX color theme via Colormind API.
-    """
-    # 1. Read file content into bytes
+  
     try:
-        # NOTE: .read() consumes the file, so it cannot be read again later.
+        
         file_bytes = await logo_file.read()
     except Exception:
         raise HTTPException(status_code=400, detail="Could not read the uploaded logo file.")
@@ -53,11 +49,11 @@ async def generate_theme_from_logo(logo_file: UploadFile = File(...)):
     dominant_rgbs = get_dominant_rgb_from_image(file_bytes)
     
     if not dominant_rgbs:
-        # This occurs if the Pillow processing fails (e.g., corrupted file)
+        # This occurs if the Pillow processing fails 
         raise HTTPException(status_code=500, detail="Failed to extract dominant colors from image. Please ensure the file is a valid image.")
 
     # 3. Use dominant RGBs to generate a harmonious theme palette
-    # The service calls Colormind and selects the best primary and light background colors
+
     primary_hex, light_bg_hex = get_palette_from_colors(dominant_rgbs)
 
     return {
@@ -130,7 +126,7 @@ def get_all_sponsors(admin_uid: str): # Requires Admin UID query param
 def update_sponsor_status(sponsor_id: str, update: SponsorUpdate, admin_uid: str):
     """Admin updates sponsor status or activates/deactivates the theme."""
     
-    # ---  I Admin role check for Update access ---
+    # ---  Admin role check for Update access ---
     admin_ref = db.collection("users").document(admin_uid).get()
     
     if not admin_ref.exists or admin_ref.to_dict().get("role") != "admin":
@@ -143,7 +139,7 @@ def update_sponsor_status(sponsor_id: str, update: SponsorUpdate, admin_uid: str
         
     update_data = update.dict(exclude_none=True)
 
-    # --- SAFETY CHECK - Return early if no data to update ---
+ 
     if not update_data:
         return sponsor_ref.get().to_dict()
    

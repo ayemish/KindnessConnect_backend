@@ -35,7 +35,7 @@ def get_verification_deals():
     """Returns the list of available verification badge tiers."""
     return MOCK_DEALS
 
-# 2. Submit New Verification Request (Temporary: NO file upload)
+# 2. Submit New Verification Request 
 @router.post("/", response_model=VerificationRequestResponse, status_code=status.HTTP_201_CREATED)
 async def create_verification_request(
     requester_uid: str = Form(...),
@@ -43,9 +43,7 @@ async def create_verification_request(
    
 ):
     try:
-        
-        document_url = "N/A - File Upload Skipped for Testing" 
-        proof_description = "N/A - Description Skipped for Testing" 
+
         
         # 2. Fetch User Name for contextual display
         user_doc = db.collection("users").document(requester_uid).get()
@@ -61,8 +59,6 @@ async def create_verification_request(
             "requester_uid": requester_uid,
             "user_name": user_name,
             "deal_id": deal_id,
-            "proof_description": proof_description,
-            "proof_document_url": document_url,
             "status": "pending",
             "created_at": datetime.utcnow()
         }
