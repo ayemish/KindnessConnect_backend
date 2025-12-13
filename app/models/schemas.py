@@ -79,6 +79,7 @@ class DonationResponse(BaseModel):
     timestamp: datetime
     payment_method: Optional[str] = "card"
     request_title: Optional[str] = "Unknown Campaign"
+    donor_name: Optional[str] = "N/A"
  
     
 # Schema for AI Story Generation Input 
