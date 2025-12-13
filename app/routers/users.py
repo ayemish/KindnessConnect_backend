@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import Optional, List
 from app.dependencies.auth import verify_firebase_token 
 from firebase_admin import auth as firebase_auth
+from firebase_admin.auth import UserNotFoundError 
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -32,16 +33,16 @@ def get_all_users(admin_uid: str = Depends(get_admin)):
         for doc in docs:
             user_data = doc.to_dict()
             
-           
+            
             user_data['uid'] = doc.id 
             
-          
+            
             # This prevents 422 errors on old or incomplete documents.
             user_data['is_verified'] = user_data.get('is_verified', False)
             user_data['is_active'] = user_data.get('is_active', True)
             user_data['role'] = user_data.get('role', 'user') 
             
-           
+            
             # Pydantic is usually good with Firestore Timestamps, but adding a fallback helps.
             user_data['created_at'] = user_data.get('created_at', datetime.utcnow())
 
@@ -59,7 +60,7 @@ def get_all_users(admin_uid: str = Depends(get_admin)):
 # --- ENDPOINT 2: Register/Create User Profile (Used post-Firebase Signup) ---
 @router.post("/signup", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def register_user_profile(user: UserCreate):
-   
+    
     try:
         user_ref = db.collection("users").document(user.uid)
         
@@ -82,9 +83,7 @@ def register_user_profile(user: UserCreate):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Registration failed: {str(e)}")
 
 
-
-
-# --- ENDPOINT 3: Get User Profile  ---
+# --- ENDPOINT 3: Get User Profile  ---
 @router.get("/profile", response_model=UserResponse)
 def get_user_profile(uid: str = Depends(verify_firebase_token)):
     """
@@ -134,38 +133,29 @@ def verify_user_account(uid: str, admin_uid: str = Depends(verify_firebase_token
         return updated_user_data
         
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))       
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)) 	
     
     
-    # --- ENDPOINT 5: Delete User Account (Admin Only) ---
+    
+    
+# --- ENDPOINT 5: Delete User Account (Admin Only - FIRESTORE ONLY) ---
 @router.delete("/{uid}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_user_account(uid: str, admin_uid: str = Depends(verify_firebase_token)):
-    """
-    Administrative endpoint to delete a user account from both Firestore and Firebase Auth.
-    """
+def delete_user_account(
+    uid: str, 
+   
+    admin_uid: str = Depends(get_admin) 
+):
+   
     try:
-        # 1. Validate Admin Privileges (using the same check as verify)
-        admin_ref = db.collection("users").document(admin_uid).get()
-        if not admin_ref.exists or admin_ref.to_dict().get("role") != "admin":
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient privileges: Admin access required")
-
-        # 2. Delete the user from Firestore (Profile Metadata)
+        
         user_ref = db.collection("users").document(uid)
-        if not user_ref.get().exists:
-            # If the user is missing in Firestore, proceed to delete from Auth
-            pass 
-        else:
+        
+        # Check if the document exists before trying to delete (optional, but safe)
+        if user_ref.get().exists:
             user_ref.delete()
-
-        # 3. Delete the user from Firebase Authentication (Email/Password credentials)
-        try:
-            firebase_auth.delete_user(uid)
-        except Exception as e:
-            # Catch error if user doesn't exist in Firebase Auth but existed in Firestore
-            print(f"User {uid} not found in Firebase Auth: {e}")
-
-        # 4. Return 204 No Content on success
+        
         return 
 
     except Exception as e:
+        
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"User deletion failed: {str(e)}")
